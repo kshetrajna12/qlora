@@ -30,6 +30,7 @@ from transformers import (
 )
 from datasets import load_dataset, Dataset
 import evaluate
+from accelerate import Accelerator
 
 from peft import (
     prepare_model_for_kbit_training,
@@ -41,6 +42,7 @@ from peft.tuners.lora import LoraLayer
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 
+accelerator = Accelerator()
 torch.backends.cuda.matmul.allow_tf32 = True
 
 logger = logging.getLogger(__name__)
@@ -625,6 +627,7 @@ def get_last_checkpoint(checkpoint_dir):
         return checkpoint_dir, is_completed # checkpoint found!
     return None, False # first training
 
+@accelerator.on_local_main_process
 def train():
     hfparser = transformers.HfArgumentParser((
         ModelArguments, DataArguments, TrainingArguments, GenerationArguments
